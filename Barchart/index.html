@@ -14,47 +14,81 @@
 
 <style>
     .bar {
-        width: 25px;
-        height: 100px;
+        width: 2px;
+        height: 75px;
         display: inline-block;
         background-color: blue;
     }
+    
+
+    .svg {
+        background-color: gray;
+    }
 </style>
 
+<body>
+</body>
 
 <script>
     // Set up dimensions of the plot. I will take this from the example itself
     // Margins is how much space we want the chart to have from its container
     var margin = {top: 30, right: 30, bottom: 50, left: 60},
-        width = 800 - margin.left - margin.right,
+        width = 600 - margin.left - margin.right,
         height= 400 - margin.top - margin.bottom;
 
     // Append svg object
+
     var svg = d3.select("body")
             .append("svg")
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-                .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
-
+                .attr("class", "svg")
+         
 
     // Parse the data
     d3.json("https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json")
         .then(function(data) {
             // year-Month is stored in data.data[i][0]
             // GDP is stored in data.data[i][1]
-            var date = [];
+
             var gdp = [];
             for (var i=0;i<data.data.length;i++){
-                date.push(data.data[i][0]);
                 gdp.push(data.data[i][1]);
             };
 
-            // xScale -Width of each bar, with padding of 0.4 between. 0 to width value
-            // yScale -Add a range with the height of our SVG. scale from height to 0 (y-axis starts bottom - 0 up to height)
+            // convert the dates to Date objects
+            var dateYear = data.data.map(function(datePoint) {
+                return new Date(datePoint[0])
+            });
 
-            var xScale = d3.scaleBand().domain([]).range([0, width]).padding(0.4),
-                yScale = d3.scaleLinear().domain([0, d3.max(gdp)]).range([height, 0])
+            // Get min and max date for x-Axis
+            var minDate = d3.min(dateYear),
+                maxDate = d3.max(dateYear);
+
+            // Create the x-scale based on dateTime
+            const xScale = d3.scaleTime()
+                             .domain([minDate, maxDate])
+                             .range([0, width]);
+            
+            var xAxis = d3.axisBottom().scale(xScale);
+
+            // Append the x-axis
+            svg.append('g')
+               .call(xAxis)
+               .attr("transform", "translate(" + margin.left + ", " + height + ")");
+
+            // yScale -Add a range with the height of our SVG. scale from height to 0 (y-axis starts bottom - 0 up to height)
+            // const yScale = d3.scaleLinear().domain([0, d3.max(gdp)]).range([height, 0])
+
+            //d3.select("body").selectAll("div")
+            //  .data(gdp)
+            //  .enter()
+            //  .append("div")
+            //  .attr("class", "bar")
+            //  .style("height", function(d) {
+            //      return d/20 + "px";
+            //  })
+
 
         });
 
